@@ -2464,17 +2464,45 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-// Visitor counter via CounterAPI.dev
+// Visitor counter — try multiple APIs, fall back to localStorage
 (function() {
   const el = document.getElementById('visitor-count');
-  fetch('https://api.counterapi.dev/v1/paperhands-gym/visits/up')
-    .then(r => r.json())
-    .then(data => {
-      if (data && data.count != null) {
-        el.textContent = 'Visitors: ' + data.count.toLocaleString();
-      }
-    })
-    .catch(() => { el.textContent = ''; });
+  const STORAGE_KEY = 'paperhands_visitor_count';
+
+  // Bump local count on every visit
+  let localCount = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10) + 1;
+  localStorage.setItem(STORAGE_KEY, localCount);
+
+  // Show local count immediately so something is always visible
+  el.textContent = 'Visitors: ' + localCount.toLocaleString();
+
+  // Try remote APIs to get the real global count
+  const apis = [
+    {
+      url: 'https://api.counterapi.dev/v1/paperhands-gym/visits/up',
+      parse: data => data && data.count
+    },
+    {
+      url: 'https://abacus.jasoncameron.dev/hit/paperhands-gym/visits',
+      parse: data => data && data.value
+    }
+  ];
+
+  (async function tryApis() {
+    for (const api of apis) {
+      try {
+        const resp = await fetch(api.url, { signal: AbortSignal.timeout(5000) });
+        if (!resp.ok) continue;
+        const data = await resp.json();
+        const count = api.parse(data);
+        if (count && count > 0) {
+          el.textContent = 'Visitors: ' + count.toLocaleString();
+          return;
+        }
+      } catch (e) { /* try next */ }
+    }
+    // All APIs failed — local count is already shown
+  })();
 })();
 </script>
 </body>
