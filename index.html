@@ -2412,6 +2412,7 @@ if (window.speechSynthesis) { speechSynthesis.getVoices(); speechSynthesis.onvoi
 // Start — show inline landing on first visit, otherwise show chart directly
 function showMainApp() {
   document.getElementById('main-content').style.display = '';
+  document.getElementById('header-brand').style.display = '';
 }
 
 // Always attach start button listener
@@ -2426,6 +2427,7 @@ if (!localStorage.getItem('weakhands_visited')) {
   // First visit: show landing intro, hide chart + buttons
   document.getElementById('landing-intro').style.display = '';
   document.getElementById('main-content').style.display = 'none';
+  document.getElementById('header-brand').style.display = 'none';
 } else {
   // Returning visitor: show chart directly
   showMainApp();
@@ -2436,6 +2438,7 @@ if (!localStorage.getItem('weakhands_visited')) {
 function goHome() {
   document.getElementById('main-content').style.display = 'none';
   document.getElementById('landing-intro').style.display = '';
+  document.getElementById('header-brand').style.display = 'none';
 }
 
 // Copy BTC wallet
