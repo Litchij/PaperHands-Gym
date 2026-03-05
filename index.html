@@ -772,6 +772,8 @@ a.about-sign-link:active {
   <span class="footer-a" id="footer-donate" onclick="copyWallet()">BTC Gym Donations</span>
   <span class="footer-dot">&middot;</span>
   <span>Inspired by <a class="footer-a" href="https://www.makesomething.so/" target="_blank" rel="noopener">makesomething.so</a></span>
+  <span class="footer-dot">&middot;</span>
+  <span id="visitor-count">Visitors: ...</span>
 </footer>
 
 <script>
@@ -2461,6 +2463,19 @@ document.addEventListener('keydown', function(e) {
     hideAbout();
   }
 });
+
+// Visitor counter via CounterAPI.dev
+(function() {
+  const el = document.getElementById('visitor-count');
+  fetch('https://api.counterapi.dev/v1/paperhands-gym/visits/up')
+    .then(r => r.json())
+    .then(data => {
+      if (data && data.count != null) {
+        el.textContent = 'Visitors: ' + data.count.toLocaleString();
+      }
+    })
+    .catch(() => { el.textContent = ''; });
+})();
 </script>
 </body>
 </html>
