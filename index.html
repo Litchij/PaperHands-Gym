@@ -1743,6 +1743,10 @@ function resetCandleCrash() {
         document.querySelectorAll('.action-btn').forEach(b => {
           b.disabled = false; b.style.opacity = ''; b.style.pointerEvents = '';
         });
+        // Sync state.currentPrice with the displayed rescue price
+        state.currentPrice = targetPrice;
+        // Re-fetch latest live price before snapping back
+        fetchRealPrice();
         // Bull reset: smoothly return from 200-300k back to real BTC price
         state.userOverride = true;
         devSuppressVolatility = true;
@@ -1923,23 +1927,36 @@ function renderTicker() {
 // PRICE FETCH & UPDATE
 // ===========================
 // Fetch real price from API (called every 5s to respect rate limits)
+let simRetryCounter = 0;
 async function fetchRealPrice() {
-  if (state.simMode) return;
+  // In sim mode, periodically retry the API to recover live pricing
+  if (state.simMode) {
+    simRetryCounter++;
+    if (simRetryCounter < 6) return; // retry every ~30s (6 * 5s interval)
+    simRetryCounter = 0;
+  }
   try {
     const resp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
     if (!resp.ok) {
       if (resp.status === 429) { state.apiFailCount++; }
-      if (state.apiFailCount > 3) { enableSimMode(); }
+      if (state.apiFailCount > 3 && !state.simMode) { enableSimMode(); }
       return;
     }
     const data = await resp.json();
     state.apiFailCount = 0;
     state.realPrice = data.bitcoin.usd;
     state.change24h = data.bitcoin.usd_24h_change;
+    // Recover from sim mode if API is working again
+    if (state.simMode) {
+      state.simMode = false;
+      document.getElementById('stat-source').textContent = 'COINGECKO';
+      const simLabel = document.getElementById('sim-label');
+      if (simLabel) simLabel.textContent = 'OFF';
+    }
   } catch (err) {
     console.error('Fetch error:', err);
     state.apiFailCount++;
-    if (state.apiFailCount > 5) { enableSimMode(); }
+    if (state.apiFailCount > 5 && !state.simMode) { enableSimMode(); }
   }
 }
 
