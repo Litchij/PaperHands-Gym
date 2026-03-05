@@ -2044,14 +2044,18 @@ function triggerRescue(type) {
     triggerFlash('green');
     if (step >= steps) {
       clearInterval(rescueInterval);
-      // Popup stays 3 seconds after rescue
+      // Popup stays 3 seconds after rescue, then smoothly snap back to live price
       setTimeout(() => {
         dismissPopup();
         dumpBtn.style.opacity = '1';
         dumpBtn.style.pointerEvents = 'auto';
-        state.userOverride = false;
-        devSuppressVolatility = false;
         rescueActive = false;
+        // Re-fetch latest live price before snapping back
+        fetchRealPrice();
+        // Smoothly transition back to real BTC price (like Bogdanoff recovery)
+        state.userOverride = true;
+        devSuppressVolatility = true;
+        scheduleSnapback();
       }, 3000);
     }
   }, 300);
