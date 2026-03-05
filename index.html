@@ -2061,19 +2061,36 @@ function triggerRescue(type) {
     triggerFlash('green');
     if (step >= steps) {
       clearInterval(rescueInterval);
-      // Popup stays 3 seconds after rescue, then smoothly snap back to live price
+      // Dismiss popup after 3s, then bull reset after 6s total
       setTimeout(() => {
         dismissPopup();
         dumpBtn.style.opacity = '1';
         dumpBtn.style.pointerEvents = 'auto';
         rescueActive = false;
-        // Re-fetch latest live price before snapping back
+      }, 3000);
+      // Bull reset: after 6 seconds, smoothly return to live BTC price
+      setTimeout(() => {
         fetchRealPrice();
-        // Smoothly transition back to real BTC price (like Bogdanoff recovery)
+        const pumped = state.currentPrice;
+        const target = state.realPrice;
         state.userOverride = true;
         devSuppressVolatility = true;
-        scheduleSnapback();
-      }, 3000);
+        let resetSteps = 12, resetStep = 0;
+        const resetTimer = setInterval(() => {
+          resetStep++;
+          const progress = resetStep / resetSteps;
+          const eased = 1 - Math.pow(1 - progress, 3);
+          updatePrice(pumped + (target - pumped) * eased, state.change24h);
+          if (resetStep >= resetSteps) {
+            clearInterval(resetTimer);
+            updatePrice(target, state.change24h);
+            state.userOverride = false;
+            devSuppressVolatility = false;
+            bloodbathPlayed = false;
+            playBullReset();
+          }
+        }, 150);
+      }, 6000);
     }
   }, 300);
 }
