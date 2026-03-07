@@ -1428,8 +1428,15 @@ function playCallSequence(callback) {
     buzzAudio.volume = state.muted ? 0 : 0.8;
     buzzAudio.play().catch(() => {});
 
+    // Vibrate the phone during buzz phase (mobile devices only)
+    if (navigator.vibrate) {
+      // Pulsing vibration pattern: vibrate 200ms, pause 100ms, repeat for ~4s
+      navigator.vibrate([200,100,200,100,200,100,200,100,200,100,200,100,200,100,200,100,200,100,200,100,200,100,200,100,200,100]);
+    }
+
     buzzAudio.onended = () => {
-      // Phase 3: Buzz done — show popup + play answer sound together
+      // Phase 3: Buzz done — stop vibration, show popup + play answer sound together
+      if (navigator.vibrate) navigator.vibrate(0); // stop vibration
       btn.classList.remove('phase-buzz');
       btn.classList.remove('calling');
       if (callback) callback();
