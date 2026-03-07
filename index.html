@@ -155,8 +155,13 @@ body.crash-shake {
   font-size: 18px; letter-spacing: 4px;
   position: absolute; left: 50%; transform: translateX(-50%);
 }
-.header-about {
+.header-nav {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.header-about {
   font-size: 12px;
   color: rgba(255,255,255,0.35);
   cursor: pointer;
@@ -810,8 +815,10 @@ a.about-sign-link:active {
     <div class="live-badge"><div class="live-dot"></div>LIVE</div>
   </div>
   <div class="header-brand" id="header-brand">💎 🙌 🧻</div>
-  <span class="header-about" onclick="showContact()" style="margin-right:18px;">Contact</span>
-  <span class="header-about" onclick="showAbout()">About</span>
+  <div class="header-nav">
+    <span class="header-about" onclick="showAbout()">About</span>
+    <span class="header-about" onclick="showContact()">Contact</span>
+  </div>
 </header>
 
 <!-- Landing intro — shown on first visit between header and footer -->
