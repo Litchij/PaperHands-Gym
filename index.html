@@ -394,6 +394,38 @@ body.crash-shake {
   100% { transform: translate(3px, 0px); }
 }
 
+/* Flying particles around portraits */
+.popup-portrait { position: relative; overflow: visible; }
+.flying-particle {
+  position: absolute;
+  font-size: 18px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+.flying-particle.p1 { animation: flyUp 1.8s ease-out infinite; top: 50%; left: -10px; }
+.flying-particle.p2 { animation: flyUpRight 2.1s ease-out 0.3s infinite; top: 20%; right: -10px; }
+.flying-particle.p3 { animation: flyUp 1.5s ease-out 0.6s infinite; top: 60%; right: -15px; }
+.flying-particle.p4 { animation: flyUpLeft 2.4s ease-out 0.9s infinite; top: 30%; left: -15px; }
+.flying-particle.p5 { animation: flyUpRight 1.6s ease-out 1.2s infinite; bottom: 10%; left: 50%; }
+.flying-particle.p6 { animation: flyUp 2.0s ease-out 0.4s infinite; top: 10%; left: 40%; }
+
+@keyframes flyUp {
+  0% { transform: translateY(0) scale(0.5); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translateY(-80px) scale(1.2); opacity: 0; }
+}
+@keyframes flyUpRight {
+  0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translate(40px, -70px) scale(1.1); opacity: 0; }
+}
+@keyframes flyUpLeft {
+  0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translate(-40px, -70px) scale(1.1); opacity: 0; }
+}
+
 /* POW / WOW / BOOM action burst */
 .action-word {
   position: absolute;
@@ -1620,7 +1652,7 @@ function showPopup(type) {
   const actionPos = ACTION_POSITIONS[Math.floor(Math.random() * ACTION_POSITIONS.length)];
 
   popup.innerHTML = `
-    <div class="popup-portrait">${createPortraitSVG(character.id)}</div>
+    <div class="popup-portrait">${createPortraitSVG(character.id)}${getParticles(character.id)}</div>
   `;
   container.appendChild(popup);
   state.popupActive = true;
@@ -1630,6 +1662,19 @@ function showPopup(type) {
 
   // Auto dismiss
   popupTimeout = setTimeout(() => dismissPopup(), 3500);
+}
+
+function getParticles(charId) {
+  const particles = {
+    satoshi: ['₿','▲','₿','▲','₿','▲'],
+    powell: ['$','💵','$','💵','$','💵'],
+    saylor: ['▲','🔥','▲','🔥','▲','🔥'],
+    saylor2: ['▲','🔥','▲','🔥','▲','🔥'],
+    cz: ['▼','📉','▼','📉','▼','📉'],
+    bogdanoff: ['📞','▼','📞','▼','📞','▼'],
+  };
+  const chars = particles[charId] || ['✦','✦','✦','✦','✦','✦'];
+  return chars.map((c, i) => '<span class="flying-particle p' + (i+1) + '">' + c + '</span>').join('');
 }
 
 function dismissPopup() {
@@ -1814,7 +1859,7 @@ function resetCandleCrash() {
   const popupW = Math.min(220, window.innerWidth * 0.45);
   popup.style.left = Math.round(window.innerWidth / 2 - popupW / 2) + 'px';
   popup.style.top = Math.round(window.innerHeight * 0.15) + 'px';
-  popup.innerHTML = '<div class="popup-portrait shake">' + createPortraitSVG(rescuerId) + '</div>';
+  popup.innerHTML = '<div class="popup-portrait shake">' + createPortraitSVG(rescuerId) + getParticles(rescuerId) + '</div>';
   container.appendChild(popup);
   state.popupActive = true;
   requestAnimationFrame(() => popup.classList.add('show'));
@@ -2232,7 +2277,7 @@ function triggerRescue(type) {
   const maxY = window.innerHeight - 260;
   popup.style.left = Math.max(10, Math.floor(Math.random() * maxX)) + 'px';
   popup.style.top = Math.max(10, Math.floor(Math.random() * maxY)) + 'px';
-  popup.innerHTML = '<div class="popup-portrait">' + createPortraitSVG(rescuerId) + '</div>';
+  popup.innerHTML = '<div class="popup-portrait">' + createPortraitSVG(rescuerId) + getParticles(rescuerId) + '</div>';
   container.appendChild(popup);
   state.popupActive = true;
   requestAnimationFrame(() => popup.classList.add('show'));
@@ -2555,7 +2600,7 @@ document.getElementById('btn-phone').addEventListener('click', () => {
     popup.style.top = Math.round(window.innerHeight * 0.18) + 'px';
 
     popup.innerHTML = `
-      <div class="popup-portrait">${createPortraitSVG('bogdanoff')}</div>
+      <div class="popup-portrait">${createPortraitSVG('bogdanoff')}${getParticles('bogdanoff')}</div>
     `;
     container.appendChild(popup);
     state.popupActive = true;
